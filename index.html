@@ -3,7 +3,7 @@
 	<script src="morpher.js"></script>
 <!--	<script type="text/javascript" src="jquery.min.js" /> -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="js/clmtrackr.min.js"></script>
+<script src="js/clmtrackr.js"></script>
 <script src="js/Stats.js"></script>
 <script src="js/utils.js"></script>
 <script src="models/model_pca_20_svm.js"></script>	
@@ -31,6 +31,8 @@ for(i = 0; i<imageArray.length; i++){
 
 
 var noFacesImages = {};
+
+var tmpImage= "DT229079.jpg";
 
 
 $( document ).ready(function() {
@@ -70,8 +72,6 @@ $( document ).ready(function() {
 		$.ajax({
 			url : theUrl,
 			success : function(result){
-				console.log("got result");
-				console.log(result);
 				items = result.collection.items;
 				shuffle(items);
 				if(items.length == 0){
@@ -135,7 +135,7 @@ $( document ).ready(function() {
 
 		var ri = imageArray.indexOf(currentImage);
 		if(ri > -1){
-			 array.splice(index, 1);
+			 imageArray.splice(index, 1);
 		}
 
 		currentImage = imageArray.shift();
@@ -231,11 +231,13 @@ $( document ).ready(function() {
 
 		console.log("finding on "  + imagename);
 		var cc = document.getElementById('image1').getContext('2d');
-
+		if(typeof ctrack !== 'undefined'){
+			console.log("resetting");
+			ctrack.reset();
+			delete ctrack;
+		}
 		img = new Image();
 		ctrack = new clm.tracker({stopOnConvergence : true});
-		ctrack.init(pModel);
-
 		img.onload = function() {
 			image2width = this.width;
 			image2height = this.height;
@@ -255,11 +257,12 @@ $( document ).ready(function() {
 
 
 	function morph2faces(image1, positions1, image2, positions2){
+		/*
 		console.log(image1);
 		console.log(positions1);
 		console.log(image2);
 		console.log(positions2);
-
+*/	
 		var image1width = imagesData[image1].width;
 		var image1height = imagesData[image1].height;
 		var image2width = imagesData[image2].width;
@@ -286,7 +289,6 @@ $( document ).ready(function() {
 
 		var json = {images: [{src:image1, points : []},{src:image2, points : []}], triangles : []};
 
-		var indexpoints = [0,7,14, 33,36,38];
 		json.triangles = [[0,3,7],
 						[7,11,14],
 						[33,36,38],
@@ -339,9 +341,21 @@ $( document ).ready(function() {
 		var morpher = new Morpher(json);
 //		$("#morpherhere").clear();
 		$("#morpherhere").html(morpher.canvas);
-//		document.body.appendChild(morpher.canvas);
+
+			var context = morpher.canvas.getContext('2d');
+		  base_image = new Image();
+		  base_image.onload = function(){
+		  	console.log("drawing tmpImage");
+		    context.drawImage(base_image, this.width, this.height);
+		  }
+		  base_image.src = tmpImage;
+
 	//	morpher.set([1, 0]);
+		
 		morpher.animate([0, 1], morphtime);
+
+
+
 		numMorphs++;
 		if(numMorphs >= imageArray.length){
 			findMoreImages();
@@ -363,9 +377,7 @@ $( document ).ready(function() {
 				}else if (morphPair.length > 2){
 					morphPair.shift();			
 				}
-
 				if(morphPair.length ==2){
-
 					morph2faces(morphPair[0].imagename, morphPair[0].positions, morphPair[1].imagename, morphPair[1].positions);
 				}				
 			}else{
