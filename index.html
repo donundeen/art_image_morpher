@@ -1,0 +1,260 @@
+<html>
+<head>
+	<script src="morpher.js"></script>
+<!--	<script type="text/javascript" src="jquery.min.js" /> -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="js/clmtrackr.min.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/utils.js"></script>
+<script src="models/model_pca_20_svm.js"></script>	
+	<script type="text/javascript">
+	console.log("in start");
+
+var image1 = "DP161260.jpg";
+var image2 = "32_100.43.jpg";
+image2 = "image_proxy.php?img=http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg";
+
+var json = {
+  "images": [
+    {
+      "points": [
+        {
+          "x": 220,
+          "y": 154
+        },
+        {
+          "x": 288,
+          "y": 154
+        },
+        {
+          "x": 253,
+          "y": 214
+        }
+      ],
+      "src": image1
+    },
+    {
+      "points": [
+        {
+          "x": 241,
+          "y": 117
+        },
+        {
+          "x": 312,
+          "y": 121
+        },
+        {
+          "x": 286,
+          "y": 187
+        }
+      ],
+      "src": image2
+    }
+  ],
+  "triangles": [
+    [
+      0,
+      2,
+      1
+    ]
+  ]
+};
+
+// triangles are indexes of points, forming a mesh.
+
+
+$( document ).ready(function() {
+	console.log("startedsss");
+
+	console.log(json.images[0].points.length + " , " + json.images[1].points.length + " , " + json.triangles.length);
+/*
+	var morpher = new Morpher(json);
+	document.body.appendChild(morpher.canvas);
+	morpher.set([1, 0]);
+	morpher.animate([0, 1], 2000);
+*/
+
+	$("#trackerimages").hide();
+
+
+	var first = true;
+	var positions1;
+	var positions2;
+	var ctrack2;
+	var ctrack2 = new clm.tracker({stopOnConvergence : true});
+	var image1width;
+	var image1height;
+	var image2width;
+	var image2height;
+
+
+	var cc = document.getElementById('image1').getContext('2d');
+
+	var img = new Image();
+	img.onload = function() {
+		cc.drawImage(img,0,0,this.width, this.height);
+		image1width = this.width;
+		image1height = this.height;
+		ctrack.start(document.getElementById('image1'));
+	};
+	img.src = image1;
+	var ctrack = new clm.tracker({stopOnConvergence : true});
+	ctrack.init(pModel);
+	var drawRequest;
+	
+
+	// detect if tracker fails to find a face
+	document.addEventListener("clmtrackrNotFound", function(event) {
+		ctrack.stop();
+		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
+	}, false);
+	
+	// detect if tracker loses tracking of face
+	document.addEventListener("clmtrackrLost", function(event) {
+		ctrack.stop();
+		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
+	}, false);
+	
+
+	// detect if tracker has converged
+	document.addEventListener("clmtrackrConverged", function(event) {
+		console.log(event);
+		// stop drawloop
+		cancelRequestAnimFrame(drawRequest);
+
+		if(first){
+		    positions1 = ctrack.getCurrentPosition();
+		    console.log(positions1);
+			first = false;
+			ctrack.init(pModel);			
+
+			var cc2 = document.getElementById('image2').getContext('2d');
+
+			var img2 = new Image();
+			img2.onload = function() {
+				image2width = this.width;
+				image2height = this.height;
+
+				cc2.drawImage(img2,0,0,this.width, this.height);
+				ctrack2.start(document.getElementById('image2'));
+			};
+			img2.src = image2;
+			ctrack2.init(pModel);			
+
+		}else{
+		    positions2 = ctrack2.getCurrentPosition();
+		    console.log(positions2);
+		    morph2faces(image1, positions1, image2, positions2);
+		}
+
+
+	}, false);
+	
+
+	function morph2faces(image1, positions1, image2, positions2){
+		console.log(image1);
+		console.log(positions1);
+		console.log(image2);
+		console.log(positions2);
+
+		positions1.push([0,0]);  // 71  ul
+		positions1.push([image1width / 2, 0]); // 72 um
+		positions1.push([image1width, 0]); //73 ur
+		positions1.push([image1width, image1height /2]); //74 mr
+		positions1.push([image1width, image1height]); //75 lr
+		positions1.push([image1width / 2, image1height]); //76 lm
+		positions1.push([0, image1height]); //77 ll
+		positions1.push([0, image1height / 2]);  //78 ml
+
+		positions2.push([0,0]);  // 71
+		positions2.push([image2width / 2, 0]); // 72
+		positions2.push([image2width, 0]); //73
+		positions2.push([image2width, image2height /2]); //74
+		positions2.push([image2width, image2height]); //75
+		positions2.push([image2width / 2, image2height]); //76
+		positions2.push([0, image2height]); //77
+		positions2.push([0, image2height / 2]);  //78
+
+
+		var json = {images: [{src:image1, points : []},{src:image2, points : []}], triangles : []};
+
+		var indexpoints = [0,7,14, 33,36,38];
+		json.triangles = [[0,3,7],
+						[7,11,14],
+						[33,36,38],
+						[0,7,14],
+						[0,14,62],
+						[0,14,33],
+						[0,62, 72],
+						[14,62,72],
+						[71,72,20],
+						[72,73,16],
+						[72,20,16],
+						[44,53,50],
+						[44,50,47],
+						[20,0,33],
+						[16,14,33],
+						[16,20,33],
+						[71,78,20],
+						[73,74,16],
+						[74,75,7],
+						[75,76,7],
+						[11,7,74],
+						[14,11,74],
+						[76,77,7],
+						[77,78,7],
+						[77,78,3],
+						[78,71,3],
+						[78,71,0],
+						[7,3,78],
+						[3,0,78],
+						[23,0,19],
+						[23,19,20],
+						[71,78,23],
+						[74, 14,16]
+						];
+
+//		for(var i=0; i<positions1.length; i++){
+		for(var i=0; i<positions1.length; i++){
+			var position1 = positions1[i];
+			var position2 = positions2[i];
+			console.log(position1);
+			console.log(position2);
+			json.images[0].points.push({x : position1[0], y: position1[1]});
+			json.images[1].points.push({x : position2[0], y: position2[1]});
+		}
+
+
+		console.log(json);
+
+		var morpher = new Morpher(json);
+		$("#morpherhere").append(morpher.canvas);
+//		document.body.appendChild(morpher.canvas);
+		morpher.set([1, 0]);
+		morpher.animate([0, 1], 50000);
+
+
+	}
+
+}); 
+
+
+
+	</script>
+</head>
+<body>
+	<div id="morpherhere"></div>
+
+	<div id="trackerimages">
+			<div id="container1">
+				<canvas id="image1" width="625" height="500"></canvas>
+				<canvas id="overlay1" width="625" height="500"></canvas>
+			</div>
+			<div id="container2">
+				<canvas id="image2" width="625" height="500"></canvas>
+				<canvas id="overlay2" width="625" height="500"></canvas>
+			</div>
+	</div>
+
+</body>
+</html>
