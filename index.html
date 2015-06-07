@@ -10,63 +10,94 @@
 	<script type="text/javascript">
 	console.log("in start");
 
-var image1 = "DP161260.jpg";
-var image2 = "32_100.43.jpg";
-image2 = "image_proxy.php?img=http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg";
-
-var json = {
-  "images": [
-    {
-      "points": [
-        {
-          "x": 220,
-          "y": 154
-        },
-        {
-          "x": 288,
-          "y": 154
-        },
-        {
-          "x": 253,
-          "y": 214
-        }
-      ],
-      "src": image1
-    },
-    {
-      "points": [
-        {
-          "x": 241,
-          "y": 117
-        },
-        {
-          "x": 312,
-          "y": 121
-        },
-        {
-          "x": 286,
-          "y": 187
-        }
-      ],
-      "src": image2
-    }
-  ],
-  "triangles": [
-    [
-      0,
-      2,
-      1
-    ]
-  ]
-};
-
+var imageArray = ["DP161260.jpg",
+				"32_100.43.jpg",
+				"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+				"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
+				"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
+				"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
+				];
 // triangles are indexes of points, forming a mesh.
+
+//var imageArray = [image1, image2, image3, image4];
+
+for(i = 0; i<imageArray.length; i++){
+	console.log(imageArray[i]);
+	if(imageArray[i].match(/^http:\/\//i)){
+		console.log("modding");
+		imageArray[i] = "image_proxy.php?img="+ imageArray[i];
+	}
+}
+
+
+var noFacesImages = {};
 
 
 $( document ).ready(function() {
-	console.log("startedsss");
 
-	console.log(json.images[0].points.length + " , " + json.images[1].points.length + " , " + json.triangles.length);
+
+
+	var page = 0;
+	var numMorphs = 0;
+
+
+	function shuffle(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
+
+	function findMoreImages(){
+		page++;
+		// start scrapi loop
+		var searchUrl = "http://www.scrapi.org/search/portrait?page=";
+		var page = 1;
+		var theUrl = searchUrl + page;
+		console.log("calling " + theUrl);
+		$.ajax({
+			url : theUrl,
+			success : function(result){
+				console.log("got result");
+				console.log(result);
+				items = result.collection.items;
+				shuffle(items);
+				if(items.length == 0){
+					page=0;
+					findMoreImages();
+				}
+				for(i = 0; i < items.length; i++){
+					item = items[i];
+					var thumb = item.image_thumb;
+					var imageUrl = "image_proxy.php?img="+ thumb.replace(/web-thumb/,"web-large");
+					imageArray.push(imageUrl);
+				}
+			},
+			error : function(x, status, message){
+				console.log("got error");
+			}
+
+		});
+	}
+
+
+	findMoreImages();
+
+	var currentImage = 0;
+
+	console.log("startedsss");
 /*
 	var morpher = new Morpher(json);
 	document.body.appendChild(morpher.canvas);
@@ -76,30 +107,23 @@ $( document ).ready(function() {
 
 	$("#trackerimages").hide();
 
+	var morphtime = 2000;
+	var waitTime = 1000;
 
 	var first = true;
 	var positions1;
 	var positions2;
-	var ctrack2;
-	var ctrack2 = new clm.tracker({stopOnConvergence : true});
 	var image1width;
 	var image1height;
-	var image2width;
-	var image2height;
+
+	var morphPair = [];
 
 
-	var cc = document.getElementById('image1').getContext('2d');
+	var currentImage = imageArray.shift();
+	imageArray.push(currentImage);
 
-	var img = new Image();
-	img.onload = function() {
-		cc.drawImage(img,0,0,this.width, this.height);
-		image1width = this.width;
-		image1height = this.height;
-		ctrack.start(document.getElementById('image1'));
-	};
-	img.src = image1;
-	var ctrack = new clm.tracker({stopOnConvergence : true});
-	ctrack.init(pModel);
+	startFindFaces(currentImage);
+
 	var drawRequest;
 	
 
@@ -107,55 +131,139 @@ $( document ).ready(function() {
 	document.addEventListener("clmtrackrNotFound", function(event) {
 		ctrack.stop();
 		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
+		noFacesImages[currentImage] = currentImage;
+
+		var ri = imageArray.indexOf(currentImage);
+		if(ri > -1){
+			 array.splice(index, 1);
+		}
+
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+
+		if(imagesData[currentImage] && imagesData[currentImage].positions){
+			morphPair.push({imagename: currentImage, positions: imagesData[currentImage].positions });
+
+			if(morphPair.length == 1){
+				currentImage = imageArray.shift();
+				imageArray.push(currentImage);
+				startFindFaces(currentImage);
+			}else if (morphPair.length > 2){
+				morphPair.shift();			
+			}
+
+			if(morphPair.length ==2){
+
+				morph2faces(morphPair[0].imagename, morphPair[0].positions, morphPair[1].imagename, morphPair[1].positions);
+			}				
+		}else{
+			startFindFaces(currentImage);
+		}
+
+
 	}, false);
 	
 	// detect if tracker loses tracking of face
 	document.addEventListener("clmtrackrLost", function(event) {
 		ctrack.stop();
 		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
+
+		noFacesImages[currentImage] = currentImage;
+
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+
+		if(imagesData[currentImage] && imagesData[currentImage].positions){
+			morphPair.push({imagename: currentImage, positions: imagesData[currentImage].positions });
+
+			if(morphPair.length == 1){
+				currentImage = imageArray.shift();
+				imageArray.push(currentImage);
+				startFindFaces(currentImage);
+			}else if (morphPair.length > 2){
+				morphPair.shift();			
+			}
+
+			if(morphPair.length ==2){
+				morph2faces(morphPair[0].imagename, morphPair[0].positions, morphPair[1].imagename, morphPair[1].positions);
+			}				
+		}else{
+			startFindFaces(currentImage);
+		}
+
+
+
 	}, false);
 	
 
 	// detect if tracker has converged
+
 	document.addEventListener("clmtrackrConverged", function(event) {
 		console.log(event);
 		// stop drawloop
 		cancelRequestAnimFrame(drawRequest);
+	    positions = ctrack.getCurrentPosition();
+		
+		if(!imagesData[currentImage]){
+			imagesData[currentImage]= {};
+		}
+		imagesData[currentImage].positions = positions;
 
-		if(first){
-		    positions1 = ctrack.getCurrentPosition();
-		    console.log(positions1);
-			first = false;
-			ctrack.init(pModel);			
+		morphPair.push({imagename: currentImage, positions: positions });
 
-			var cc2 = document.getElementById('image2').getContext('2d');
-
-			var img2 = new Image();
-			img2.onload = function() {
-				image2width = this.width;
-				image2height = this.height;
-
-				cc2.drawImage(img2,0,0,this.width, this.height);
-				ctrack2.start(document.getElementById('image2'));
-			};
-			img2.src = image2;
-			ctrack2.init(pModel);			
-
-		}else{
-		    positions2 = ctrack2.getCurrentPosition();
-		    console.log(positions2);
-		    morph2faces(image1, positions1, image2, positions2);
+		if(morphPair.length == 1){
+			currentImage = imageArray.shift();
+			imageArray.push(currentImage);
+			startFindFaces(currentImage);
+		}else if (morphPair.length > 2){
+			morphPair.shift();			
 		}
 
-
+		if(morphPair.length ==2){
+			morph2faces(morphPair[0].imagename, morphPair[0].positions, morphPair[1].imagename, morphPair[1].positions);
+		}
 	}, false);
 	
+	var imagesData = {};
+
+	function startFindFaces(imagename){
+
+
+		console.log("finding on "  + imagename);
+		var cc = document.getElementById('image1').getContext('2d');
+
+		img = new Image();
+		ctrack = new clm.tracker({stopOnConvergence : true});
+		ctrack.init(pModel);
+
+		img.onload = function() {
+			image2width = this.width;
+			image2height = this.height;
+
+			imagesData[imagename] = {};
+
+			imagesData[imagename].width = this.width;
+			imagesData[imagename].height = this.height;
+
+			cc.drawImage(img,0,0,this.width, this.height);
+			ctrack.start(document.getElementById('image1'));
+		};
+		img.src = imagename;
+		ctrack.init(pModel);			
+
+	}
+
 
 	function morph2faces(image1, positions1, image2, positions2){
 		console.log(image1);
 		console.log(positions1);
 		console.log(image2);
 		console.log(positions2);
+
+		var image1width = imagesData[image1].width;
+		var image1height = imagesData[image1].height;
+		var image2width = imagesData[image2].width;
+		var image2height = imagesData[image2].width;
 
 		positions1.push([0,0]);  // 71  ul
 		positions1.push([image1width / 2, 0]); // 72 um
@@ -216,23 +324,54 @@ $( document ).ready(function() {
 
 //		for(var i=0; i<positions1.length; i++){
 		for(var i=0; i<positions1.length; i++){
+
 			var position1 = positions1[i];
 			var position2 = positions2[i];
-			console.log(position1);
-			console.log(position2);
-			json.images[0].points.push({x : position1[0], y: position1[1]});
-			json.images[1].points.push({x : position2[0], y: position2[1]});
+			if(position1 && position2){
+				json.images[0].points.push({x : position1[0], y: position1[1]});
+				json.images[1].points.push({x : position2[0], y: position2[1]});
+			}
 		}
 
 
 		console.log(json);
 
 		var morpher = new Morpher(json);
-		$("#morpherhere").append(morpher.canvas);
+//		$("#morpherhere").clear();
+		$("#morpherhere").html(morpher.canvas);
 //		document.body.appendChild(morpher.canvas);
-		morpher.set([1, 0]);
-		morpher.animate([0, 1], 50000);
+	//	morpher.set([1, 0]);
+		morpher.animate([0, 1], morphtime);
+		numMorphs++;
+		if(numMorphs >= imageArray.length){
+			findMoreImages();
+		}
 
+		setTimeout(function(){
+			console	.log("done");
+
+			currentImage = imageArray.shift();
+			imageArray.push(currentImage);
+
+			if(imagesData[currentImage] && imagesData[currentImage].positions){
+				morphPair.push({imagename: currentImage, positions: imagesData[currentImage].positions });
+
+				if(morphPair.length == 1){
+					currentImage = imageArray.shift();
+					imageArray.push(currentImage);
+					startFindFaces(currentImage);
+				}else if (morphPair.length > 2){
+					morphPair.shift();			
+				}
+
+				if(morphPair.length ==2){
+
+					morph2faces(morphPair[0].imagename, morphPair[0].positions, morphPair[1].imagename, morphPair[1].positions);
+				}				
+			}else{
+				startFindFaces(currentImage);
+			}
+		}, morphtime + waitTime)
 
 	}
 
