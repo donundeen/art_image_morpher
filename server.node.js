@@ -149,7 +149,13 @@ function imgproxy(imgname, width, height, query, res){
           .resize(width)
           .autoOrient()
           .stream(function(err, stdout, stderr){
-            stdout.pipe(res);
+            if(err){
+              console.log("error");
+              console.log(err);
+              res.end();
+            }else{
+              stdout.pipe(res);
+            }
         //    res.end();
           });
 
