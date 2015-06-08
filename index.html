@@ -374,6 +374,8 @@ $( document ).ready(function() {
 		}else{
 			console.log(morpher);
 			//morpher.reset();
+
+			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
 			morpher.fromJSON(json);
 //			morpher.updateCanvasSize();
 			morpher.set([1]);
