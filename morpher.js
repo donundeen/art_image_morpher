@@ -1143,7 +1143,9 @@
       _ref = this.imageEvents;
       for (event in _ref) {
         handler = _ref[event];
-        image.off(event, this[handler]);
+        if(typeof image !== 'undefined'){
+          image.off(event, this[handler]);
+        }
       }
       if (i !== -1) {
         delete this.images.splice(i, 1);
@@ -1337,6 +1339,7 @@
         h = Math.max(image.el.height + image.getY(), h);
       }
       if (w !== this.canvas.width || h !== this.canvas.height) {
+        console.log("updating size");
         this.canvas.width = this.tmpCanvas.width = w;
         this.canvas.height = this.tmpCanvas.height = h;
         this.refreshMaxSize();
