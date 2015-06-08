@@ -21,7 +21,7 @@ canvas {
 	<script type="text/javascript">
 	console.log("in start");
 
-	var morphtime = 4000;
+	var morphtime = 5000;
 	var waitTime = 1000;
 
 
@@ -180,10 +180,38 @@ $( document ).ready(function() {
 	[57,58,60],
 	[58,59,60],
 
+	[71,72,62],
+	[72,73,62],
+	[73,74,62],
+	[74,75,62],
+	[75,76,62],
+	[76,77,62],
+	[77,78,62],
+	[78,71,62],
+
 
 	];
 
 
+	var smallTriangleSet = 
+	[
+	[71,72,27],
+	[27,32,72],
+	[32,72,73],
+	[73,74,32],
+	[74,32,37],
+	[74,50,37],
+	[74,75,50],
+	[75,76,50],
+	[44,50,76],
+	[76,77,44],
+	[77,78,44],
+	[78,37,44],
+	[78,37,27],
+	[71,78,27],
+	[37,27,32],
+	[44,50,37]
+	];
 
 	var page = 0;
 	var numMorphs = 0;
@@ -446,6 +474,12 @@ $( document ).ready(function() {
 
 	function generateTrianglesLarge(positions){
 		return largeTriangleSet;
+//		return smallTriangleSet;
+	}
+
+	function generateTrianglesSmall(positions){
+//		return largeTriangleSet;
+		return smallTriangleSet;
 	}
 
 	function generateTrianglesEasy(positions){
@@ -509,6 +543,7 @@ $( document ).ready(function() {
 		positions1.push([image1width / 2, image1height]); //76 lm
 		positions1.push([0, image1height]); //77 ll
 		positions1.push([0, image1height / 2]);  //78 ml
+		positions1.push([image1width / 2, image1height / 2]);  //79 center
 
 		positions2.push([0,0]);  // 71
 		positions2.push([image2width / 2, 0]); // 72
@@ -518,11 +553,12 @@ $( document ).ready(function() {
 		positions2.push([image2width / 2, image2height]); //76
 		positions2.push([0, image2height]); //77
 		positions2.push([0, image2height / 2]);  //78
+		positions2.push([image2width / 2, image2height / 2]);  //79 center
 
 
 		var json = {images: [{src:image1, points : []},{src:image2, points : []}], triangles : []};
 
-		json.triangles = generateTrianglesLarge(positions1);
+		json.triangles = generateTrianglesSmall(positions1);
 
 //		fosr(var i=0; i<positions1.length; i++){
 		for(var i=0; i<positions1.length; i++){
