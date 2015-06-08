@@ -25,9 +25,7 @@ canvas {
 
 
 
-var imageArray = ["DP161260.jpg",
-				"32_100.43.jpg",
-				"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+var imageArray = ["http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
 				"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
 				"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
 				"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
@@ -40,7 +38,7 @@ for(i = 0; i<imageArray.length; i++){
 	console.log(imageArray[i]);
 	if(imageArray[i].match(/^http:\/\//i)){
 		console.log("modding");
-		imageArray[i] = "image_proxy.php?img="+ imageArray[i];
+		imageArray[i] = "?action=imgproxy&width=500&imgname="+ imageArray[i];
 	}
 }
 
@@ -98,7 +96,7 @@ $( document ).ready(function() {
 				for(i = 0; i < items.length; i++){
 					item = items[i];
 					var thumb = item.image_thumb;
-					var imageUrl = "image_proxy.php?img="+ thumb.replace(/web-thumb/,"web-large");
+					var imageUrl = "?action=imgproxy&width=500&imgname="+  thumb.replace(/web-thumb/,"web-large");
 					imageArray.push(imageUrl);
 				}
 			},
