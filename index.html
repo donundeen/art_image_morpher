@@ -202,6 +202,9 @@ $( document ).ready(function() {
 	// detect if tracker has converged
 
 	document.addEventListener("clmtrackrConverged", function(event) {
+		ctrack.stop();
+		ctrack.reset();
+		
 		console.log(event);
 		// stop drawloop
 		cancelRequestAnimFrame(drawRequest);
