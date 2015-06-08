@@ -118,6 +118,7 @@ $( document ).ready(function() {
 
 	var morphPair = [];
 
+	var ctrack;
 
 	var currentImage = imageArray.shift();
 	imageArray.push(currentImage);
@@ -130,12 +131,13 @@ $( document ).ready(function() {
 	// detect if tracker fails to find a face
 	document.addEventListener("clmtrackrNotFound", function(event) {
 		ctrack.stop();
+		ctrack.reset();
 		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
 		noFacesImages[currentImage] = currentImage;
 
 		var ri = imageArray.indexOf(currentImage);
 		if(ri > -1){
-			 imageArray.splice(index, 1);
+			 imageArray.splice(ri, 1);
 		}
 
 		currentImage = imageArray.shift();
@@ -166,6 +168,7 @@ $( document ).ready(function() {
 	// detect if tracker loses tracking of face
 	document.addEventListener("clmtrackrLost", function(event) {
 		ctrack.stop();
+		ctrack.reset();
 		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
 
 		noFacesImages[currentImage] = currentImage;
@@ -225,7 +228,6 @@ $( document ).ready(function() {
 	}, false);
 	
 	var imagesData = {};
-
 	function startFindFaces(imagename){
 
 
@@ -233,11 +235,16 @@ $( document ).ready(function() {
 		var cc = document.getElementById('image1').getContext('2d');
 		if(typeof ctrack !== 'undefined'){
 			console.log("resetting");
+			ctrack.stop();
 			ctrack.reset();
 			delete ctrack;
+		}else{
+			ctrack = new clm.tracker({stopOnConvergence : true});
 		}
 		img = new Image();
-		ctrack = new clm.tracker({stopOnConvergence : true});
+		ctrack.init(pModel);			
+
+	//	ctrack = new clm.tracker({stopOnConvergence : true});
 		img.onload = function() {
 			image2width = this.width;
 			image2height = this.height;
@@ -251,7 +258,6 @@ $( document ).ready(function() {
 			ctrack.start(document.getElementById('image1'));
 		};
 		img.src = imagename;
-		ctrack.init(pModel);			
 
 	}
 
