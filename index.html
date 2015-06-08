@@ -39,7 +39,7 @@ for(i = 0; i<imageArray.length; i++){
 	console.log(imageArray[i]);
 	if(imageArray[i].match(/^http:\/\//i)){
 		console.log("modding");
-		imageArray[i] = "./?action=imgproxy&width=500&imgname="+ imageArray[i];
+		imageArray[i] = "./?action=imgproxy&width=800&imgname="+ imageArray[i];
 	}
 }
 
@@ -257,7 +257,7 @@ $( document ).ready(function() {
 				for(i = 0; i < items.length; i++){
 					item = items[i];
 					var thumb = item.image_thumb;
-					var imageUrl = "./?action=imgproxy&width=500&imgname="+  thumb.replace(/web-thumb/,"web-large");
+					var imageUrl = "./?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"web-large");
 					imageArray.push(imageUrl);
 				}
 			},
