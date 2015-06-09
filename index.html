@@ -21,7 +21,7 @@ canvas {
 	<script type="text/javascript">
 	console.log("in start");
 
-	var morphtime = 5000;
+	var morphtime = 60000;
 	var waitTime = 1000;
 
 
@@ -180,14 +180,7 @@ $( document ).ready(function() {
 	[57,58,60],
 	[58,59,60],
 
-	[71,72,62],
-	[72,73,62],
-	[73,74,62],
-	[74,75,62],
-	[75,76,62],
-	[76,77,62],
-	[77,78,62],
-	[78,71,62],
+
 
 
 	];
@@ -558,7 +551,7 @@ $( document ).ready(function() {
 
 		var json = {images: [{src:image1, points : []},{src:image2, points : []}], triangles : []};
 
-		json.triangles = generateTrianglesSmall(positions1);
+		json.triangles = generateTrianglesLarge(positions1);
 
 //		fosr(var i=0; i<positions1.length; i++){
 		for(var i=0; i<positions1.length; i++){
