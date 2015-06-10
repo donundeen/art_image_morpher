@@ -210,6 +210,12 @@ $( document ).ready(function() {
 	var numMorphs = 0;
 
 
+	var maxPage;
+
+	function getRandomInt(min, max) {
+  		return Math.floor(Math.random() * (max - min)) + min;
+	}
+
 	shuffle(imageArray);
 
 	function shuffle(array) {
@@ -234,7 +240,7 @@ $( document ).ready(function() {
 	function findMoreImages(){
 		page++;
 		// start scrapi loop
-		var searchUrl = "http://www.scrapi.org/search/portrait?page=";
+		var searchUrl = "http://www.scrapi.org/search/portrait?page="+getRandomInt(0, maxPage);
 		var page = 1;
 		var theUrl = searchUrl + page;
 		console.log("calling " + theUrl);
@@ -245,7 +251,12 @@ $( document ).ready(function() {
 				shuffle(items);
 				if(items.length == 0){
 					page=0;
+					maxPage--;
+					if(maxPage <=1){
+						maxPage = 1;
+					}
 					findMoreImages();
+
 				}
 				for(i = 0; i < items.length; i++){
 					item = items[i];
