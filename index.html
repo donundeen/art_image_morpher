@@ -21,7 +21,7 @@ canvas {
 	<script type="text/javascript">
 	console.log("in start");
 
-	var morphtime = 60000;
+	var morphtime = 6000;
 	var waitTime = 1000;
 
 
@@ -210,7 +210,7 @@ $( document ).ready(function() {
 	var numMorphs = 0;
 
 
-	var maxPage;
+	var maxPage = 10;
 
 	function getRandomInt(min, max) {
   		return Math.floor(Math.random() * (max - min)) + min;
@@ -261,7 +261,7 @@ $( document ).ready(function() {
 				for(i = 0; i < items.length; i++){
 					item = items[i];
 					var thumb = item.image_thumb;
-					var imageUrl = "./?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"web-large");
+					var imageUrl = "./?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"original");
 					imageArray.push(imageUrl);
 				}
 			},
@@ -641,12 +641,12 @@ $( document ).ready(function() {
 	<div style="align: center;" id="morpherhere"></div>
 	<div id="trackerimages">
 			<div id="container1">
-				<canvas id="image1" width="625" height="500"></canvas>
-				<canvas id="overlay1" width="625" height="500"></canvas>
+				<canvas id="image1"></canvas>
+				<canvas id="overlay1"></canvas>
 			</div>
 			<div id="container2">
-				<canvas id="image2" width="625" height="500"></canvas>
-				<canvas id="overlay2" width="625" height="500"></canvas>
+				<canvas id="image2" ></canvas>
+				<canvas id="overlay2" ></canvas>
 			</div>
 	</div>
 
