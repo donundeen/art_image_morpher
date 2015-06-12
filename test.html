@@ -1,0 +1,260 @@
+<html>
+<head>
+	<style type="text/css">
+#morpherhere canvas {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 800px;
+}
+	</style>
+	<script src="morpher.js"></script>
+<!--	<script type="text/javascript" src="jquery.min.js" /> -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="js/clmtrackr.js"></script>
+<script src="js/earcut.min.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/utils.js"></script>
+<script src="models/model_pca_20_svm.js"></script>
+<!--<script src="models/model_spca_20_svm.js"></script> -->	
+<script type="text/javascript">
+console.log("in start");
+
+
+// config vars
+var morphtime = 6000;
+var waitTime = 6000;
+var maxPage = 20;
+
+
+// starting off with a few known good images..
+var imageArray = [
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
+			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
+			];
+// triangles are indexes of points, forming a mesh.
+
+
+
+for(i = 0; i<imageArray.length; i++){
+	console.log(imageArray[i]);
+	if(imageArray[i].match(/^http:\/\//i)){
+		console.log("modding");
+		imageArray[i] = "?action=imgproxy&width=800&imgname="+ imageArray[i];
+	}
+}
+
+
+$( document ).ready(function() {
+
+
+
+//	$("#trackerimages").hide();
+
+
+
+	// util functions
+	function getRandomInt(min, max) {
+  		return Math.floor(Math.random() * (max - min)) + min;
+	}
+
+	function shuffle(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
+
+
+	shuffle(imageArray);
+
+
+
+	// finding faces section
+	var currentImage = 0;
+
+	console.log("startedsss");
+
+	var positions1;
+	var positions2;
+	var image1width;
+	var image1height;
+
+	var imagesWithFaces = {};
+	var noFacesImages = {};
+	var imagesData = {};
+	var facesStack = [];
+
+	var morphPair = [];
+
+	var ctrack;
+
+
+	var currentImage = imageArray.shift();
+	imageArray.push(currentImage);
+
+	startFindFaces(currentImage);
+
+	var drawRequest;
+	
+
+	// detect if tracker fails to find a face
+	document.addEventListener("clmtrackrNotFound", function(event) {
+		ctrack.stop();
+		ctrack.reset();
+		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
+		console.log("face was " + currentImage);
+
+//		noFacesImages[currentImage] = currentImage;
+/*
+		var ri = imageArray.indexOf(currentImage);
+		if(ri > -1){
+			 imageArray.splice(ri, 1);
+		}
+*/
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+
+			setTimeout(function(){
+			//	startFindFaces(currentImage);
+			}, 5000);
+	}, false);
+	
+	// detect if tracker loses tracking of face
+	document.addEventListener("clmtrackrLost", function(event) {
+		ctrack.stop();
+		ctrack.reset();
+		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
+		console.log("face was " + currentImage);
+
+	//	noFacesImages[currentImage] = currentImage;
+/*
+		var ri = imageArray.indexOf(currentImage);
+		if(ri > -1){
+			 imageArray.splice(ri, 1);
+		}
+*/
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+			setTimeout(function(){
+			//	startFindFaces(currentImage);
+			}, 5000);
+	}, false);
+	
+
+	// detect if tracker has converged
+
+	document.addEventListener("clmtrackrConverged", function(event) {
+
+		console.log(event);
+		console.log("found face for " + currentImage);
+		// stop drawloop
+		cancelRequestAnimFrame(drawRequest);
+	    positions = ctrack.getCurrentPosition();
+
+		ctrack.stop();
+		ctrack.reset();
+
+		if(!imagesData[currentImage]){
+			imagesData[currentImage]= {};
+		}
+		imagesData[currentImage].positions = positions;
+		imagesData[currentImage].imagename = currentImage;
+		facesStack.push(imagesData[currentImage]);
+
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+		setTimeout(function(){
+		//	startFindFaces(currentImage);
+		}, 5000);
+
+	}, false);
+
+
+	function startFindFaces(imagename){
+		if(imagesWithFaces[imagename] || noFacesImages[imagename]){
+			currentImage = imageArray.shift();
+			imageArray.push(currentImage);
+			setTimeout(function(){
+			//	startFindFaces(currentImage);
+			}, 1000);
+			return;
+		}
+
+		console.log("finding on "  + imagename);
+		var cc = document.getElementById('image1').getContext('2d');
+		if(typeof ctrack !== 'undefined'){
+			console.log("resetting");
+//			ctrack = new clm.tracker({stopOnConvergence : true, useWebGL: true});
+			ctrack = new clm.tracker({stopOnConvergence : true});
+			ctrack.stop();
+			ctrack.reset();
+	//		delete ctrack;
+		}else{
+			ctrack = new clm.tracker({stopOnConvergence : true});
+		}
+		img = new Image();
+
+	//	ctrack = new clm.tracker({stopOnConvergence : true});
+		img.onload = function() {
+			imagesData[imagename] = {};
+			imagesData[imagename].width = this.width;
+			imagesData[imagename].height = this.height;
+			console.log("drawing image");
+			console.log(img);
+			cc.drawImage(img,0,0,this.width, this.height);
+			ctrack.init(pModel);			
+//			ctrack.start(document.getElementById('image1'));
+			ctrack.start(document.getElementById('image1'));
+		};
+		img.onerror = function(){
+			console.log("error getting image");
+			noFacesImages[currentImage] = currentImage;
+			currentImage = imageArray.shift();
+			imageArray.push(currentImage);
+			ctrack.stop();
+			ctrack.reset();
+
+			setTimeout(function(){
+		//		startFindFaces(currentImage);
+			}, 1000);
+			return;			
+		}
+		img.src = imagename;
+
+	}
+
+
+}); 
+
+
+
+	</script>
+</head>
+<body style="background-color:black;">
+	<div style="align: center;" id="morpherhere"></div>
+	<div id="trackerimages">
+			<div id="container1">
+				<canvas id="image1" width=800 height=1200></canvas>
+				<canvas id="overlay1" width=800 height=1200></canvas>
+			</div>
+	</div>
+
+</body>
+</html>

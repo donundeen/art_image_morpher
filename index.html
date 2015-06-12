@@ -1,7 +1,7 @@
 <html>
 <head>
 	<style type="text/css">
-canvas {
+#morpherhere canvas {
     padding-left: 0;
     padding-right: 0;
     margin-left: auto;
@@ -17,22 +17,24 @@ canvas {
 <script src="js/earcut.min.js"></script>
 <script src="js/Stats.js"></script>
 <script src="js/utils.js"></script>
-<script src="models/model_pca_20_svm.js"></script>	
+<script src="models/model_pca_20_svm.js"></script>
+<!--<script src="models/model_spca_20_svm.js"></script> -->	
 <script type="text/javascript">
 console.log("in start");
 
 
 // config vars
 var morphtime = 6000;
-var waitTime = 1000;
+var waitTime = 6000;
 var maxPage = 20;
 
 
 // starting off with a few known good images..
-var imageArray = ["http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
-			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
-			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
-			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
+var imageArray = [
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
+			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
 			];
 // triangles are indexes of points, forming a mesh.
 
@@ -265,16 +267,14 @@ $( document ).ready(function() {
 						foundImages[imageUrl] = imageUrl;
 					}
 				}
-				setTimeout(findMoreImages, 60000);
-
+				setTimeout(findMoreImages, 120000);
 			},
 			error : function(x, status, message){
 				console.log("got error");
 				console.log(message);
 				console.log(status);
-				setTimeout(findMoreImages, 60000);
+				setTimeout(findMoreImages, 120000);
 			}
-
 		});
 	}
 	findMoreImages();
@@ -317,19 +317,20 @@ $( document ).ready(function() {
 		ctrack.reset();
 		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
-		noFacesImages[currentImage] = currentImage;
 
+//		noFacesImages[currentImage] = currentImage;
+/*
 		var ri = imageArray.indexOf(currentImage);
 		if(ri > -1){
 			 imageArray.splice(ri, 1);
 		}
-
+*/
 		currentImage = imageArray.shift();
 		imageArray.push(currentImage);
 
 			setTimeout(function(){
 				startFindFaces(currentImage);
-			}, 1000);
+			}, 5000);
 	}, false);
 	
 	// detect if tracker loses tracking of face
@@ -339,13 +340,18 @@ $( document ).ready(function() {
 		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
 
-		noFacesImages[currentImage] = currentImage;
-
+	//	noFacesImages[currentImage] = currentImage;
+/*
+		var ri = imageArray.indexOf(currentImage);
+		if(ri > -1){
+			 imageArray.splice(ri, 1);
+		}
+*/
 		currentImage = imageArray.shift();
 		imageArray.push(currentImage);
 			setTimeout(function(){
 				startFindFaces(currentImage);
-			}, 1000);
+			}, 5000);
 	}, false);
 	
 
@@ -373,7 +379,7 @@ $( document ).ready(function() {
 		imageArray.push(currentImage);
 		setTimeout(function(){
 			startFindFaces(currentImage);
-		}, 1000);
+		}, 5000);
 
 	}, false);
 
@@ -392,14 +398,14 @@ $( document ).ready(function() {
 		var cc = document.getElementById('image1').getContext('2d');
 		if(typeof ctrack !== 'undefined'){
 			console.log("resetting");
+			ctrack = new clm.tracker({stopOnConvergence : true, useWebGL: true});
 			ctrack.stop();
 			ctrack.reset();
 	//		delete ctrack;
 		}else{
-			ctrack = new clm.tracker({stopOnConvergence : true});
+			ctrack = new clm.tracker({stopOnConvergence : true, useWebGL: true});
 		}
 		img = new Image();
-		ctrack.init(pModel);			
 
 	//	ctrack = new clm.tracker({stopOnConvergence : true});
 		img.onload = function() {
@@ -407,6 +413,8 @@ $( document ).ready(function() {
 			imagesData[imagename].width = this.width;
 			imagesData[imagename].height = this.height;
 			cc.drawImage(img,0,0,this.width, this.height);
+			ctrack.init(pModel);			
+//			ctrack.start(document.getElementById('image1'));
 			ctrack.start(document.getElementById('image1'));
 		};
 		img.onerror = function(){
@@ -414,14 +422,22 @@ $( document ).ready(function() {
 			noFacesImages[currentImage] = currentImage;
 			currentImage = imageArray.shift();
 			imageArray.push(currentImage);
+			ctrack.stop();
+			ctrack.reset();
+
 			setTimeout(function(){
 				startFindFaces(currentImage);
 			}, 1000);
 			return;			
 		}
 		img.src = imagename;
+
 	}
 
+
+
+
+// morphing section
 
 	var earcutTriangles = [];
 	function generateTrianglesEarcut(positions){
@@ -438,9 +454,6 @@ $( document ).ready(function() {
 
 		console.log(coords);
 		var triangles_flat = earcut(coords);
-
-		console.log(triangles_flat);
-
 		var triangles = [];
 		var triangle = [];
 		for(var i = 1; i <= triangles_flat.length; i++){
@@ -526,7 +539,6 @@ $( document ).ready(function() {
 					    function(){
 					    	setTimeout(morpherLoop, waitTime);
 			});
-
 		}else{
 			setTimeout(morpherLoop, waitTime);
 		}
@@ -600,20 +612,13 @@ $( document ).ready(function() {
 		}else{
 			console.log(morpher);
 			//morpher.reset();
-
 			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
 			morpher.fromJSON(json);
 //			morpher.updateCanvasSize();
-			morpher.set([1]);
+//			morpher.set([1]);
 		}
-
-
-		
 		morpher.animate([0, 1], morphtime);
-
-
 		setTimeout(callback, morphtime);
-
 	}
 
 }); 
