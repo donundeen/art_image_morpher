@@ -17,6 +17,7 @@
 <script src="js/earcut.min.js"></script>
 <script src="js/Stats.js"></script>
 <script src="js/utils.js"></script>
+<script src="facesData.js"></script>
 <script src="models/model_pca_20_svm.js"></script>
 <!--<script src="models/model_spca_20_svm.js"></script> -->	
 <script type="text/javascript">
@@ -295,16 +296,27 @@ $( document ).ready(function() {
 
 	var imagesWithFaces = {};
 	var noFacesImages = {};
-	var imagesData = {};
-	var facesStack = [];
 
+/*
+	if(typeof imagesData === "undefined"){
+		var imagesData = {};
+	}
+
+	if(typeof facesStack === "undefined"){
+		var facesStack = [];
+	}
+	*/
 	var morphPair = [];
 
 	var ctrack;
 
 	var keepFindingFaces = true;
 
-	startFindFaces();
+	//startFindFaces();
+
+	morpherLoop();
+
+	console.log(facesStack);
 
 	var drawRequest;
 	
@@ -535,16 +547,21 @@ $( document ).ready(function() {
 			console.log(prevFaceImage.imagename);
 			console.log("to");
 			console.log(currentFaceImage.imagename)
-
+/*
+			console.log(JSON.stringify(facesStack));
+			console.log(JSON.stringify(imagesData));
+*/
 			morph2faces(prevFaceImage.imagename, prevFaceImage.positions,
 					    currentFaceImage.imagename, currentFaceImage.positions,
 					    function(){
 					    	console.log("finished morph");
-					    	startFindFaces();
+					    	morpherLoop();
+					    	//startFindFaces();
 //					    	setTimeout(startFindFaces, waitTime);
 			});
 		}else{
-			startFindFaces();
+//			startFindFaces();
+			morpherLoop();
 //			setTimeout(startFindFaces, waitTime);
 		}
 	}
@@ -558,11 +575,12 @@ $( document ).ready(function() {
 
 
 		console.log("morphing faces");
+		/*
 		console.log(image1);
 		console.log(positions1);
 		console.log(image2);
 		console.log(positions2);
-
+*/
 
 		var image1width = imagesData[image1].width;
 		var image1height = imagesData[image1].height;
@@ -609,15 +627,24 @@ $( document ).ready(function() {
 
 //		var morpher = new Morpher(json);
 //		$("#morpherhere").html(morpher.canvas);
+/*
+			morpher = new Morpher(json);
+			$("#morpherhere").html(morpher.canvas);
+			morpher.set([1, 0]);
+			morpher.animate([0, 1], morphtime);
+			setTimeout(callback, morphtime);
+*/
+
 
 		if(!morpher){
+			console.log("new morpher");
 			morpher = new Morpher(json);
 			$("#morpherhere").html(morpher.canvas);
 			morpher.set([1, 0]);
 			morpher.animate([0, 1], morphtime);
 			setTimeout(callback, morphtime);
 		}else{
-			morpher.reset();
+//			morpher.reset();
 			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
 //			morpher.updateCanvasSize();
 			morpher.fromJSON(json); // this here makes the Destination image pop up. or rather, some that this triggers...
@@ -625,6 +652,7 @@ $( document ).ready(function() {
 			morpher.animate([0, 1], morphtime);
 			setTimeout(callback, morphtime);
 		}
+		
 	}
 
 }); 
