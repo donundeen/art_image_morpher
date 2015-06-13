@@ -33,7 +33,7 @@ var maxPage = 20;
 var imageArray = [
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
 			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
-//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
+			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
 			];
 // triangles are indexes of points, forming a mesh.
@@ -284,7 +284,7 @@ $( document ).ready(function() {
 
 
 	// finding faces section
-	var currentImage = 0;
+	var currentImage = false;
 
 	console.log("startedsss");
 
@@ -302,11 +302,9 @@ $( document ).ready(function() {
 
 	var ctrack;
 
+	var keepFindingFaces = true;
 
-	var currentImage = imageArray.shift();
-	imageArray.push(currentImage);
-
-	startFindFaces(currentImage);
+	startFindFaces();
 
 	var drawRequest;
 	
@@ -318,18 +316,16 @@ $( document ).ready(function() {
 		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
 
-//		noFacesImages[currentImage] = currentImage;
-/*
+		noFacesImages[currentImage] = currentImage;
+
 		var ri = imageArray.indexOf(currentImage);
 		if(ri > -1){
 			 imageArray.splice(ri, 1);
 		}
-*/
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
+
 
 			setTimeout(function(){
-				startFindFaces(currentImage);
+				startFindFaces();
 			}, 5000);
 	}, false);
 	
@@ -340,17 +336,15 @@ $( document ).ready(function() {
 		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
 
-	//	noFacesImages[currentImage] = currentImage;
-/*
+		noFacesImages[currentImage] = currentImage;
+
 		var ri = imageArray.indexOf(currentImage);
 		if(ri > -1){
 			 imageArray.splice(ri, 1);
 		}
-*/
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
+
 			setTimeout(function(){
-				startFindFaces(currentImage);
+				startFindFaces();
 			}, 5000);
 	}, false);
 	
@@ -359,7 +353,6 @@ $( document ).ready(function() {
 
 	document.addEventListener("clmtrackrConverged", function(event) {
 
-		console.log(event);
 		console.log("found face for " + currentImage);
 		// stop drawloop
 		cancelRequestAnimFrame(drawRequest);
@@ -371,21 +364,24 @@ $( document ).ready(function() {
 		if(!imagesData[currentImage]){
 			imagesData[currentImage]= {};
 		}
+		imagesWithFaces[currentImage] = currentImage;
 		imagesData[currentImage].positions = positions;
 		imagesData[currentImage].imagename = currentImage;
 		facesStack.push(imagesData[currentImage]);
-
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
 		setTimeout(function(){
-			startFindFaces(currentImage);
+			morpherLoop();
 		}, 5000);
 
 	}, false);
 
+	function startFindFaces(){
 
-	function startFindFaces(imagename){
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+		imagename = currentImage;
+
 		if(imagesWithFaces[imagename] || noFacesImages[imagename]){
+			console.log(imagename + " we already know about");
 			currentImage = imageArray.shift();
 			imageArray.push(currentImage);
 			setTimeout(function(){
@@ -412,6 +408,9 @@ $( document ).ready(function() {
 			imagesData[imagename] = {};
 			imagesData[imagename].width = this.width;
 			imagesData[imagename].height = this.height;
+			cc.canvas.width = this.width;
+			cc.canvas.height = this.height;
+
 			cc.drawImage(img,0,0,this.width, this.height);
 			ctrack.init(pModel);			
 //			ctrack.start(document.getElementById('image1'));
@@ -419,9 +418,7 @@ $( document ).ready(function() {
 		};
 		img.onerror = function(){
 			console.log("error getting image");
-			noFacesImages[currentImage] = currentImage;
-			currentImage = imageArray.shift();
-			imageArray.push(currentImage);
+			noFacesImages[imagename] = imagename;
 			ctrack.stop();
 			ctrack.reset();
 
@@ -534,18 +531,26 @@ $( document ).ready(function() {
 			currentFaceImage  = facesStack.shift();
 			facesStack.push(currentFaceImage);
 
+			console.log("morphing from ");
+			console.log(prevFaceImage.imagename);
+			console.log("to");
+			console.log(currentFaceImage.imagename)
+
 			morph2faces(prevFaceImage.imagename, prevFaceImage.positions,
 					    currentFaceImage.imagename, currentFaceImage.positions,
 					    function(){
-					    	setTimeout(morpherLoop, waitTime);
+					    	console.log("finished morph");
+					    	startFindFaces();
+//					    	setTimeout(startFindFaces, waitTime);
 			});
 		}else{
-			setTimeout(morpherLoop, waitTime);
+			startFindFaces();
+//			setTimeout(startFindFaces, waitTime);
 		}
 	}
 
 
-	morpherLoop();
+//	morpherLoop();
 
 
 	var morpher = false;
@@ -609,16 +614,17 @@ $( document ).ready(function() {
 			morpher = new Morpher(json);
 			$("#morpherhere").html(morpher.canvas);
 			morpher.set([1, 0]);
+			morpher.animate([0, 1], morphtime);
+			setTimeout(callback, morphtime);
 		}else{
-			console.log(morpher);
-			//morpher.reset();
+			morpher.reset();
 			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
-			morpher.fromJSON(json);
 //			morpher.updateCanvasSize();
-//			morpher.set([1]);
+			morpher.fromJSON(json); // this here makes the Destination image pop up. or rather, some that this triggers...
+			morpher.set([1]);
+			morpher.animate([0, 1], morphtime);
+			setTimeout(callback, morphtime);
 		}
-		morpher.animate([0, 1], morphtime);
-		setTimeout(callback, morphtime);
 	}
 
 }); 

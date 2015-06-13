@@ -32,14 +32,15 @@ var maxPage = 20;
 // starting off with a few known good images..
 var imageArray = [
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
-			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+			"32_100.43.jpg",
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
 			];
 // triangles are indexes of points, forming a mesh.
 
 
-
+/*
 for(i = 0; i<imageArray.length; i++){
 	console.log(imageArray[i]);
 	if(imageArray[i].match(/^http:\/\//i)){
@@ -47,7 +48,7 @@ for(i = 0; i<imageArray.length; i++){
 		imageArray[i] = "?action=imgproxy&width=800&imgname="+ imageArray[i];
 	}
 }
-
+*/
 
 $( document ).ready(function() {
 
@@ -57,32 +58,7 @@ $( document ).ready(function() {
 
 
 
-	// util functions
-	function getRandomInt(min, max) {
-  		return Math.floor(Math.random() * (max - min)) + min;
-	}
 
-	function shuffle(array) {
-	  var currentIndex = array.length, temporaryValue, randomIndex ;
-
-	  // While there remain elements to shuffle...
-	  while (0 !== currentIndex) {
-
-	    // Pick a remaining element...
-	    randomIndex = Math.floor(Math.random() * currentIndex);
-	    currentIndex -= 1;
-
-	    // And swap it with the current element.
-	    temporaryValue = array[currentIndex];
-	    array[currentIndex] = array[randomIndex];
-	    array[randomIndex] = temporaryValue;
-	  }
-
-	  return array;
-	}
-
-
-	shuffle(imageArray);
 
 
 
@@ -109,8 +85,6 @@ $( document ).ready(function() {
 	var currentImage = imageArray.shift();
 	imageArray.push(currentImage);
 
-	startFindFaces(currentImage);
-
 	var drawRequest;
 	
 
@@ -120,6 +94,7 @@ $( document ).ready(function() {
 		ctrack.reset();
 		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
+		console.log(document.getElementById('image1'));
 
 //		noFacesImages[currentImage] = currentImage;
 /*
@@ -139,9 +114,11 @@ $( document ).ready(function() {
 	// detect if tracker loses tracking of face
 	document.addEventListener("clmtrackrLost", function(event) {
 		ctrack.stop();
-		ctrack.reset();
+//		ctrack.reset();
 		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
 		console.log("face was " + currentImage);
+
+		console.log(document.getElementById('image1'));
 
 	//	noFacesImages[currentImage] = currentImage;
 /*
@@ -169,7 +146,7 @@ $( document ).ready(function() {
 	    positions = ctrack.getCurrentPosition();
 
 		ctrack.stop();
-		ctrack.reset();
+//		ctrack.reset();
 
 		if(!imagesData[currentImage]){
 			imagesData[currentImage]= {};
@@ -180,79 +157,56 @@ $( document ).ready(function() {
 
 		currentImage = imageArray.shift();
 		imageArray.push(currentImage);
-		setTimeout(function(){
-		//	startFindFaces(currentImage);
-		}, 5000);
 
 	}, false);
 
 
-	function startFindFaces(imagename){
-		if(imagesWithFaces[imagename] || noFacesImages[imagename]){
-			currentImage = imageArray.shift();
-			imageArray.push(currentImage);
-			setTimeout(function(){
-			//	startFindFaces(currentImage);
-			}, 1000);
-			return;
-		}
 
-		console.log("finding on "  + imagename);
-		var cc = document.getElementById('image1').getContext('2d');
-		if(typeof ctrack !== 'undefined'){
-			console.log("resetting");
-//			ctrack = new clm.tracker({stopOnConvergence : true, useWebGL: true});
-			ctrack = new clm.tracker({stopOnConvergence : true});
-			ctrack.stop();
-			ctrack.reset();
-	//		delete ctrack;
-		}else{
-			ctrack = new clm.tracker({stopOnConvergence : true});
-		}
-		img = new Image();
+	var imagename = currentImage;
 
-	//	ctrack = new clm.tracker({stopOnConvergence : true});
-		img.onload = function() {
-			imagesData[imagename] = {};
-			imagesData[imagename].width = this.width;
-			imagesData[imagename].height = this.height;
-			console.log("drawing image");
-			console.log(img);
-			cc.drawImage(img,0,0,this.width, this.height);
-			ctrack.init(pModel);			
+	ctrack = new clm.tracker({stopOnConvergence : true});
+
+
+	console.log("finding on "  + imagename);
+	var cc = document.getElementById('image1').getContext('2d');
+
+	img = new Image();
+
+//	ctrack = new clm.tracker({stopOnConvergence : true});
+	img.onload = function() {
+		imagesData[imagename] = {};
+		imagesData[imagename].width = this.width;
+		imagesData[imagename].height = this.height;
+		console.log("drawing image " + this.width + ", " + this.height);
+		console.log(img);
+		cc.canvas.width = this.width;
+		cc.canvas.height = this.height;
+		cc.drawImage(img,0,0,this.width, this.height);
+		ctrack.init(pModel);			
 //			ctrack.start(document.getElementById('image1'));
-			ctrack.start(document.getElementById('image1'));
-		};
-		img.onerror = function(){
-			console.log("error getting image");
-			noFacesImages[currentImage] = currentImage;
-			currentImage = imageArray.shift();
-			imageArray.push(currentImage);
-			ctrack.stop();
-			ctrack.reset();
-
-			setTimeout(function(){
-		//		startFindFaces(currentImage);
-			}, 1000);
-			return;			
-		}
-		img.src = imagename;
-
+		ctrack.start(document.getElementById('image1'));
+	};
+	img.onerror = function(){
+		console.log("error getting image");
+		noFacesImages[currentImage] = currentImage;
+		currentImage = imageArray.shift();
+		imageArray.push(currentImage);
+		ctrack.stop();
+		ctrack.reset();
+		return;			
 	}
+	img.src = imagename;
 
 
-}); 
-
-
+});
 
 	</script>
 </head>
 <body style="background-color:black;">
-	<div style="align: center;" id="morpherhere"></div>
 	<div id="trackerimages">
-			<div id="container1">
-				<canvas id="image1" width=800 height=1200></canvas>
-				<canvas id="overlay1" width=800 height=1200></canvas>
+			<div id="container">
+				<canvas id="image1" ></canvas>
+				<canvas id="overlay1" ></canvas>
 			</div>
 	</div>
 
