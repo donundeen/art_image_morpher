@@ -144,7 +144,7 @@ function imgproxy(imgname, width, height, query, res){
                   'Access-Control-Allow-Origin' : '*'});
 
 //          response.pipe(res);
-
+          console.log("trying width " + width);
           gm(response)
           .resize(width)
           .autoOrient()
