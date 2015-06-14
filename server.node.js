@@ -142,14 +142,15 @@ function imgproxy(imgname, width, height, query, res){
           res.writeHead(200, {
               'Content-Type': response.headers['content-type'], 
                   'Access-Control-Allow-Origin' : '*'});
-var ims=fs.createWriteStream('name.jpeg');
-
 
 //          response.pipe(res);
           console.log("trying width " + width);
           gm(response)
           .resize(width)
           .autoOrient()
+          .write('newImage.jpg', function (err) {
+            if (!err) console.log(' hooray! ');
+          })
           .stream(function(err, stdout, stderr){
             if(err){
               console.log("error in resizing");
@@ -160,9 +161,6 @@ var ims=fs.createWriteStream('name.jpeg');
               stdout.pipe(res);
             }
         //    res.end();
-          })
-          .write(ims, function(err){
-            console.log("done " + err);            
           });
 
       } else {
