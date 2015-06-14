@@ -160,8 +160,9 @@ var ims=fs.createWriteStream('name.jpeg');
               stdout.pipe(res);
             }
         //    res.end();
-          }).write(ims, function(){
-            console.log("done");            
+          })
+          .write(ims, function(err){
+            console.log("done " + err);            
           });
 
       } else {
