@@ -150,16 +150,18 @@ function imgproxy(imgname, width, height, query, res){
           .autoOrient()
           .stream(function(err, stdout, stderr){
             if(err){
-              console.log("error");
+              console.log("error in resizing");
               console.log(err);
               res.end();
             }else{
+              console.log("resize ok");
               stdout.pipe(res);
             }
         //    res.end();
           });
 
       } else {
+          console.log("bad responde " + response.statusCode);
           res.writeHead(response.statusCode);
           res.end();
       }
