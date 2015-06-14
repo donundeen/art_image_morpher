@@ -146,8 +146,8 @@ function imgproxy(imgname, width, height, query, res){
 //          response.pipe(res);
           console.log("trying width " + width);
           gm(response)
-          .resize(parseInt(width), null)
-       //   .autoOrient()
+          .resize(parseInt(width))
+          .autoOrient()
           .stream(function(err, stdout, stderr){
             if(err){
               console.log("error in resizing");
