@@ -146,13 +146,8 @@ function imgproxy(imgname, width, height, query, res){
 //          response.pipe(res);
           console.log("trying width " + width);
           gm(response)
-          .resize(width)
+          .resize(parseInt(width))
           .autoOrient()
-          .write('newImage.jpg', function (err) {
-            console.log(' hooray! ' + err);
-            res.end();
-
-          });/*
           .stream(function(err, stdout, stderr){
             if(err){
               console.log("error in resizing");
@@ -162,9 +157,7 @@ function imgproxy(imgname, width, height, query, res){
               console.log("resize ok");
               stdout.pipe(res);
             }
-        //    res.end();
           });
-*/
       } else {
           console.log("bad responde " + response.statusCode);
           res.writeHead(response.statusCode);
