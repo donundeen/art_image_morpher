@@ -201,7 +201,7 @@ $( document ).ready(function() {
 
 	shuffle(imageArray);
 
-
+	shuffle(facesStack);
 	
 	// finding faces section
 	var currentImage = false;
@@ -330,12 +330,7 @@ $( document ).ready(function() {
 
 
 		console.log("morphing faces");
-		/*
-		console.log(image1);
-		console.log(positions1);
-		console.log(image2);
-		console.log(positions2);
-*/
+
 
 		var image1width = imagesData[image1].width;
 		var image1height = imagesData[image1].height;
@@ -367,7 +362,6 @@ $( document ).ready(function() {
 
 		json.triangles = generateTrianglesLarge(positions1);
 
-//		fosr(var i=0; i<positions1.length; i++){
 		for(var i=0; i<positions1.length; i++){
 			var position1 = positions1[i];
 			var position2 = positions2[i];
@@ -377,47 +371,10 @@ $( document ).ready(function() {
 			}
 		}
 
-
-		console.log(json);
-
-//		var morpher = new Morpher(json);
-//		$("#morpherhere").html(morpher.canvas);
-/*
-			morpher = new Morpher(json);
-			$("#morpherhere").html(morpher.canvas);
-			morpher.set([1, 0]);
-			morpher.animate([0, 1], morphtime);
-			setTimeout(callback, morphtime);
-*/
-
-
 		if(firstMorph){
 			firstMorph = false;
 			console.log("new morpher");
 			morpher = new Morpher(json);
-
-			morpher.on("animation:complete", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - animation complete");
-			});
-			morpher.on("animation:start", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - animation started");
-			});
-			morpher.on("load", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - load event");
-			});
-			morpher.on("draw", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - draw event");
-			});
-			morpher.on("change", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - change event");
-			});
-			morpher.on("image:add", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - image:add event");
-			});
-			morpher.on("image:remove", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - image:remove event");
-			});
-
 
 			$("#morpherhere").html(morpher.canvas);
 
@@ -438,22 +395,9 @@ $( document ).ready(function() {
 				console.log("new load");
 				delete prevMorpher;
 				$("#morpherhere").html(morpher.canvas);
-
 			});
 
-
-//			morpher.reset();
-			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
-//			morpher.updateCanvasSize();
-//			nextMorpher.fromJSON(json); // this here makes the Destination image pop up. or rather, something that this triggers...
 			morpher.set([1]);
-			morpher.on("animation:complete", function(morpher){
-				console.log("animation complete");
-			});
-			morpher.on("animation:start", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - next animation started");
-			});		
-
 
 			morpher.animate([0, 1], morphtime);
 			setTimeout(callback, morphtime);
