@@ -142,6 +142,8 @@ function imgproxy(imgname, width, height, query, res){
           res.writeHead(200, {
               'Content-Type': response.headers['content-type'], 
                   'Access-Control-Allow-Origin' : '*'});
+var ims=fs.createWriteStream('name.jpeg');
+
 
 //          response.pipe(res);
           console.log("trying width " + width);
@@ -158,7 +160,7 @@ function imgproxy(imgname, width, height, query, res){
               stdout.pipe(res);
             }
         //    res.end();
-          });
+          }).write(ims);
 
       } else {
           console.log("bad responde " + response.statusCode);
