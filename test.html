@@ -213,6 +213,14 @@ $( document ).ready(function() {
 	var image1width;
 	var image1height;
 
+
+	var morpher = false;
+	var nextMorpher = false;
+	var prevMorpher = false;
+	var firstMorph = true;	
+	var currentFaceImage = false;
+
+
 	var imagesWithFaces = {};
 	var noFacesImages = {};
 
@@ -275,7 +283,6 @@ $( document ).ready(function() {
 	}
 
 
-	var currentFaceImage = false;
 	function morpherLoop(){
 		console.log("in morpher loop ");
 		console.log(facesStack.length);
@@ -318,8 +325,7 @@ $( document ).ready(function() {
 //	morpherLoop();
 
 
-	var morpher = false;
-	var nextMorpher = false;
+
 	function morph2faces(image1, positions1, image2, positions2, callback){
 
 
@@ -385,7 +391,8 @@ $( document ).ready(function() {
 */
 
 
-		if(!morpher){
+		if(firstMorph){
+			firstMorph = false;
 			console.log("new morpher");
 			morpher = new Morpher(json);
 
@@ -423,29 +430,32 @@ $( document ).ready(function() {
 			setTimeout(callback, morphtime);
 		}else{
 			console.log("reusing morpher");
-			nextMorpher = new Morpher(json);
 
-			nextMorpher.on("load", function(themorpher){
+			prevMorpher = morpher;
+			morpher = new Morpher(json);
+
+			morpher.on("load", function(themorpher){
 				console.log("new load");
-				delete morpher;
-				morpher = themorpher;
+				delete prevMorpher;
+				$("#morpherhere").html(morpher.canvas);
 
-			})
-			nextMorpher.on("animation:start", function(morpher){
-				console.log("eeeeeeeeeeeeeeeee - next animation started");
-			});			
+			});
+
 
 //			morpher.reset();
 			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
 //			morpher.updateCanvasSize();
-			nextMorpher.fromJSON(json); // this here makes the Destination image pop up. or rather, something that this triggers...
-			nextMorpher.set([1]);
-			nextMorpher.on("animation:complete", function(morpher){
+//			nextMorpher.fromJSON(json); // this here makes the Destination image pop up. or rather, something that this triggers...
+			morpher.set([1]);
+			morpher.on("animation:complete", function(morpher){
 				console.log("animation complete");
 			});
+			morpher.on("animation:start", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - next animation started");
+			});		
 
 
-			nextMorpher.animate([0, 1], morphtime);
+			morpher.animate([0, 1], morphtime);
 			setTimeout(callback, morphtime);
 		}
 		
@@ -459,12 +469,6 @@ $( document ).ready(function() {
 </head>
 <body style="background-color:black;">
 	<div style="align: center;" id="morpherhere"></div>
-	<div id="trackerimages">
-			<div id="container1">
-				<canvas id="image1" ></canvas>
-				<canvas id="overlay1"></canvas>
-			</div>
-	</div>
 
 </body>
 </html>
