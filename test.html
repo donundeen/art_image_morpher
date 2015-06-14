@@ -10,15 +10,10 @@
     width: 800px;
 }
 	</style>
-	<script src="morpher.js"></script>
+	<script src="js/morpher.js"></script>
 <!--	<script type="text/javascript" src="jquery.min.js" /> -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="js/clmtrackr.js"></script>
-<script src="js/earcut.min.js"></script>
-<script src="js/Stats.js"></script>
-<script src="js/utils.js"></script>
-<script src="models/model_pca_20_svm.js"></script>
-<!--<script src="models/model_spca_20_svm.js"></script> -->	
+<script src="facesData.js"></script>
 <script type="text/javascript">
 console.log("in start");
 
@@ -32,38 +27,184 @@ var maxPage = 20;
 // starting off with a few known good images..
 var imageArray = [
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
-//			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
-			"32_100.43.jpg",
-//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
+			"http://images.metmuseum.org/CRDImages/ep/web-large/co.ep.1971.86_16.1.jpg",
+			"http://images.metmuseum.org/CRDImages/ep/web-large/DT2774.jpg",
 //			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
 			];
 // triangles are indexes of points, forming a mesh.
 
 
-/*
-for(i = 0; i<imageArray.length; i++){
-	console.log(imageArray[i]);
-	if(imageArray[i].match(/^http:\/\//i)){
-		console.log("modding");
-		imageArray[i] = "?action=imgproxy&width=800&imgname="+ imageArray[i];
-	}
-}
-*/
+
+	var largeTriangleSet = [
+
+	[71,72,21],
+	[72,21,22],
+	[72,22,18],
+	[18,17,72],
+	[17,72,73],
+	[17,16,73],
+	[16,15,73],
+	[15,73,74],
+	[15,14,74],
+	[14,13,74],
+	[13,12,74],
+	[74,12,11],
+	[74,75,11],
+	[10,11,75],
+	[9,10,75],
+	[9,75,76],
+	[8,9,76],
+	[7,8,76],
+	[6,7,76],
+	[5,6,76],
+	[5,76,77],
+	[4,5,77],
+	[3,4,77],
+	[3,77,78],
+	[2,3,78],
+	[1,2,78],
+	[0,1,78],
+	[19,0,78],
+	[19,71,78],
+	[19,20,71],
+	[20,21,71],
+	[0,19,23],
+	[0,26,34],
+	[0,23,26],
+	[0,1,34],
+	[1,34,35],
+	[1,2,35],
+	[2,35,36],
+	[2,3,36],
+	[3,36,44],
+	[3,4,44],
+	[4,5,44],
+	[5,44,55],
+	[5,6,55],
+	[6,54,55],
+	[6,7,54],
+	[7,54,53],
+	[7,53,52],
+	[7,8,52],
+	[8,52,51],
+	[8,9,51],
+	[9,51,50],
+	[9,10,50],
+	[10,11,50],
+	[11,50,38],
+	[11,12,38],
+	[12,38,39],
+	[12,39,13],
+	[13,39,40],
+	[13,14,40],
+	[14,31,40],
+	[14,31,28],
+	[15,28,14],
+	[15,28,29],
+	[15,16,29],
+	[16,17,29],
+	[17,18,29],
+	[18,29,30],
+	[18,33,30],
+	[18,22,33],
+	[19,23,24],
+	[19,20,24],
+	[20,21,24],
+	[21,22,24],
+	[22,24,25],
+	[22,25,33],
+	[23,24,26],
+	[24,25,26],
+	[25,33,34],
+	[25,26,34],
+	[28,29,31],
+	[29,30,31],
+	[30,33,40],
+	[30,31,40],
+	[33,40,62],
+	[33,34,62],
+	[34,35,62],
+	[35,36,62],
+	[36,37,62],
+	[36,44,48],
+	[36,37,48],
+	[37,46,48],
+	[37,46,47],
+	[37,47,48],
+	[37,48,49],
+	[37,38,49],
+	[37,38,62],
+	[38,39,62],
+	[38,49,50],
+	[39,40,62],
+	[44,45,61],
+	[44,61,56],
+	[44,55,56],
+	[45,46,61],
+	[46,60,61],
+	[46,47,60],
+	[47,48,60],
+	[48,59,60],
+	[48,49,59],
+	[49,50,59],
+	[50,58,59],
+	[50,51,58],
+	[51,52,58],
+	[52,57,58],
+	[52,53,57],
+	[53,54,57],
+	[54,56,57],
+	[54,55,56],
+	[56,60,61],
+	[56,57,60],
+	[57,58,60],
+	[58,59,60],
+
+
+
+
+	];
+
+
+
 
 $( document ).ready(function() {
 
 
 
-//	$("#trackerimages").hide();
 
 
+	// util functions
+	function getRandomInt(min, max) {
+  		return Math.floor(Math.random() * (max - min)) + min;
+	}
+
+	function shuffle(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
 
 
+	shuffle(imageArray);
 
 
-
+	
 	// finding faces section
-	var currentImage = 0;
+	var currentImage = false;
 
 	console.log("startedsss");
 
@@ -74,139 +215,254 @@ $( document ).ready(function() {
 
 	var imagesWithFaces = {};
 	var noFacesImages = {};
-	var imagesData = {};
-	var facesStack = [];
 
+/*
+	if(typeof imagesData === "undefined"){
+		var imagesData = {};
+	}
+
+	if(typeof facesStack === "undefined"){
+		var facesStack = [];
+	}
+	*/
 	var morphPair = [];
 
 	var ctrack;
 
+	var keepFindingFaces = true;
 
-	var currentImage = imageArray.shift();
-	imageArray.push(currentImage);
+	//startFindFaces();
+
+	morpherLoop();
 
 	var drawRequest;
 	
 
-	// detect if tracker fails to find a face
-	document.addEventListener("clmtrackrNotFound", function(event) {
-		ctrack.stop();
-		ctrack.reset();
-		console.log(" clmtrackrNotFound The tracking had problems with finding a face in this image. Try selecting the face in the image manually.")
-		console.log("face was " + currentImage);
-		console.log(document.getElementById('image1'));
 
-//		noFacesImages[currentImage] = currentImage;
-/*
-		var ri = imageArray.indexOf(currentImage);
-		if(ri > -1){
-			 imageArray.splice(ri, 1);
+// morphing section
+
+	var earcutTriangles = [];
+	function generateTrianglesEarcut(positions){
+
+		if(earcutTriangles.length> 0){
+			return earcutTriangles;
 		}
-*/
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
 
-			setTimeout(function(){
-			//	startFindFaces(currentImage);
-			}, 5000);
-	}, false);
-	
-	// detect if tracker loses tracking of face
-	document.addEventListener("clmtrackrLost", function(event) {
-		ctrack.stop();
-//		ctrack.reset();
-		console.log(" clmtrackrLost The tracking had problems converging on a face in this image. Try selecting the face in the image manually.")
-		console.log("face was " + currentImage);
-
-		console.log(document.getElementById('image1'));
-
-	//	noFacesImages[currentImage] = currentImage;
-/*
-		var ri = imageArray.indexOf(currentImage);
-		if(ri > -1){
-			 imageArray.splice(ri, 1);
+		coords = [];
+		for(var i = 0; i < positions.length; i++){
+			coords.push(positions[i][0]);
+			coords.push(positions[i][1]);
 		}
-*/
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
-			setTimeout(function(){
-			//	startFindFaces(currentImage);
-			}, 5000);
-	}, false);
-	
 
-	// detect if tracker has converged
-
-	document.addEventListener("clmtrackrConverged", function(event) {
-
-		console.log(event);
-		console.log("found face for " + currentImage);
-		// stop drawloop
-		cancelRequestAnimFrame(drawRequest);
-	    positions = ctrack.getCurrentPosition();
-
-		ctrack.stop();
-//		ctrack.reset();
-
-		if(!imagesData[currentImage]){
-			imagesData[currentImage]= {};
+		console.log(coords);
+		var triangles_flat = earcut(coords);
+		var triangles = [];
+		var triangle = [];
+		for(var i = 1; i <= triangles_flat.length; i++){
+			triangle.push(triangles_flat[i-1]);
+			if(i % 3 == 0){
+				triangles.push(triangle);
+				triangle = [];
+			}
 		}
-		imagesData[currentImage].positions = positions;
-		imagesData[currentImage].imagename = currentImage;
-		facesStack.push(imagesData[currentImage]);
-
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
-
-	}, false);
-
-
-
-	var imagename = currentImage;
-
-	ctrack = new clm.tracker({stopOnConvergence : true});
-
-
-	console.log("finding on "  + imagename);
-	var cc = document.getElementById('image1').getContext('2d');
-
-	img = new Image();
-
-//	ctrack = new clm.tracker({stopOnConvergence : true});
-	img.onload = function() {
-		imagesData[imagename] = {};
-		imagesData[imagename].width = this.width;
-		imagesData[imagename].height = this.height;
-		console.log("drawing image " + this.width + ", " + this.height);
-		console.log(img);
-		cc.canvas.width = this.width;
-		cc.canvas.height = this.height;
-		cc.drawImage(img,0,0,this.width, this.height);
-		ctrack.init(pModel);			
-//			ctrack.start(document.getElementById('image1'));
-		ctrack.start(document.getElementById('image1'));
-	};
-	img.onerror = function(){
-		console.log("error getting image");
-		noFacesImages[currentImage] = currentImage;
-		currentImage = imageArray.shift();
-		imageArray.push(currentImage);
-		ctrack.stop();
-		ctrack.reset();
-		return;			
+		earcutTriangles = triangles;
+		return triangles; 
 	}
-	img.src = imagename;
+
+	function generateTrianglesLarge(positions){
+		return largeTriangleSet;
+//		return smallTriangleSet;
+	}
 
 
-});
+	var currentFaceImage = false;
+	function morpherLoop(){
+		console.log("in morpher loop ");
+		console.log(facesStack.length);
+		console.log(facesStack);
+		var prevFaceImage;
+		if(facesStack.length >= 2){
+			if(!currentFaceImage){
+				prevFaceImage  = facesStack.shift();
+				facesStack.push(prevFaceImage);
+			}else{
+				prevFaceImage = currentFaceImage;
+			}
+			currentFaceImage  = facesStack.shift();
+			facesStack.push(currentFaceImage);
+
+			console.log("morphing from ");
+			console.log(prevFaceImage.imagename);
+			console.log("to");
+			console.log(currentFaceImage.imagename)
+/*
+			console.log(JSON.stringify(facesStack));
+			console.log(JSON.stringify(imagesData));
+*/
+			morph2faces(prevFaceImage.imagename, prevFaceImage.positions,
+					    currentFaceImage.imagename, currentFaceImage.positions,
+					    function(){
+					    	console.log("finished morph");
+					    	morpherLoop();
+					    	//startFindFaces();
+//					    	setTimeout(startFindFaces, waitTime);
+			});
+		}else{
+//			startFindFaces();
+			morpherLoop();
+//			setTimeout(startFindFaces, waitTime);
+		}
+	}
+
+
+//	morpherLoop();
+
+
+	var morpher = false;
+	var nextMorpher = false;
+	function morph2faces(image1, positions1, image2, positions2, callback){
+
+
+		console.log("morphing faces");
+		/*
+		console.log(image1);
+		console.log(positions1);
+		console.log(image2);
+		console.log(positions2);
+*/
+
+		var image1width = imagesData[image1].width;
+		var image1height = imagesData[image1].height;
+		var image2width = imagesData[image2].width;
+		var image2height = imagesData[image2].width;
+
+		positions1.push([0,0]);  // 71  ul
+		positions1.push([image1width / 2, 0]); // 72 um
+		positions1.push([image1width, 0]); //73 ur
+		positions1.push([image1width, image1height /2]); //74 mr
+		positions1.push([image1width, image1height]); //75 lr
+		positions1.push([image1width / 2, image1height]); //76 lm
+		positions1.push([0, image1height]); //77 ll
+		positions1.push([0, image1height / 2]);  //78 ml
+		positions1.push([image1width / 2, image1height / 2]);  //79 center
+
+		positions2.push([0,0]);  // 71
+		positions2.push([image2width / 2, 0]); // 72
+		positions2.push([image2width, 0]); //73
+		positions2.push([image2width, image2height /2]); //74
+		positions2.push([image2width, image2height]); //75
+		positions2.push([image2width / 2, image2height]); //76
+		positions2.push([0, image2height]); //77
+		positions2.push([0, image2height / 2]);  //78
+		positions2.push([image2width / 2, image2height / 2]);  //79 center
+
+
+		var json = {images: [{src:image1, points : []},{src:image2, points : []}], triangles : []};
+
+		json.triangles = generateTrianglesLarge(positions1);
+
+//		fosr(var i=0; i<positions1.length; i++){
+		for(var i=0; i<positions1.length; i++){
+			var position1 = positions1[i];
+			var position2 = positions2[i];
+			if(position1 && position2){
+				json.images[0].points.push({x : position1[0], y: position1[1]});
+				json.images[1].points.push({x : position2[0], y: position2[1]});
+			}
+		}
+
+
+		console.log(json);
+
+//		var morpher = new Morpher(json);
+//		$("#morpherhere").html(morpher.canvas);
+/*
+			morpher = new Morpher(json);
+			$("#morpherhere").html(morpher.canvas);
+			morpher.set([1, 0]);
+			morpher.animate([0, 1], morphtime);
+			setTimeout(callback, morphtime);
+*/
+
+
+		if(!morpher){
+			console.log("new morpher");
+			morpher = new Morpher(json);
+
+			morpher.on("animation:complete", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - animation complete");
+			});
+			morpher.on("animation:start", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - animation started");
+			});
+			morpher.on("load", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - load event");
+			});
+			morpher.on("draw", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - draw event");
+			});
+			morpher.on("change", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - change event");
+			});
+			morpher.on("image:add", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - image:add event");
+			});
+			morpher.on("image:remove", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - image:remove event");
+			});
+
+
+			$("#morpherhere").html(morpher.canvas);
+
+
+
+			morpher.set([1, 0]);
+			morpher.animate([0, 1], morphtime);
+
+
+			setTimeout(callback, morphtime);
+		}else{
+			console.log("reusing morpher");
+			nextMorpher = new Morpher(json);
+
+			nextMorpher.on("load", function(themorpher){
+				console.log("new load");
+				delete morpher;
+				morpher = themorpher;
+
+			})
+			nextMorpher.on("animation:start", function(morpher){
+				console.log("eeeeeeeeeeeeeeeee - next animation started");
+			});			
+
+//			morpher.reset();
+			// here I'm tryig to move to the next morphing, without re-initing the morpher canvas. But sometimes the canvas size resets in an uncool ways.
+//			morpher.updateCanvasSize();
+			nextMorpher.fromJSON(json); // this here makes the Destination image pop up. or rather, something that this triggers...
+			nextMorpher.set([1]);
+			nextMorpher.on("animation:complete", function(morpher){
+				console.log("animation complete");
+			});
+
+
+			nextMorpher.animate([0, 1], morphtime);
+			setTimeout(callback, morphtime);
+		}
+		
+	}
+
+}); 
+
+
 
 	</script>
 </head>
 <body style="background-color:black;">
+	<div style="align: center;" id="morpherhere"></div>
 	<div id="trackerimages">
-			<div id="container">
+			<div id="container1">
 				<canvas id="image1" ></canvas>
-				<canvas id="overlay1" ></canvas>
+				<canvas id="overlay1"></canvas>
 			</div>
 	</div>
 
