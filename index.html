@@ -679,12 +679,12 @@ $( document ).ready(function() {
 				console.log("new load");
 				delete prevMorpher;
 				$("#morpherhere").html(morpher.canvas);
+				morpher.set([1]);
+
+				morpher.animate([0, 1], morphtime);
+				setTimeout(callback, morphtime);
 			});
 
-			morpher.set([1]);
-
-			morpher.animate([0, 1], morphtime);
-			setTimeout(callback, morphtime);
 		}
 		
 	}
