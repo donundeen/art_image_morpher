@@ -307,8 +307,10 @@ $( document ).ready(function() {
 	var currentFaceImage = false;
 
 	var numFails = 0;
-
-
+/*
+	var imagesData = {};
+	var facesStack = [];
+*/
 /*
 	if(typeof imagesData === "undefined"){
 		var imagesData = {};
@@ -351,6 +353,7 @@ $( document ).ready(function() {
 		numFails++;
 		if(numFails > 5){
 			// if we've not found faces for a while, do another morph
+			console.log("too many fails, doing another loop");
 			numFails  = 0;
 			morpherLoop();
 		}else{
@@ -377,6 +380,8 @@ $( document ).ready(function() {
 		numFails++;
 		if(numFails > 5){
 			// if we've not found faces for a while, do another morph
+			console.log("too many fails, doing another loop");
+
 			numFails  = 0;
 			morpherLoop();
 		}else{
@@ -558,7 +563,7 @@ $( document ).ready(function() {
 		shuffle(facesStack);
 
 		console.log("in morpher loop ");
-		console.log(facesStack.length);
+		console.log(facesStack.length + " total faces in stack");
 		console.log(facesStack);
 		var prevFaceImage;
 		if(facesStack.length >= 2){
@@ -568,9 +573,11 @@ $( document ).ready(function() {
 			}else{
 				prevFaceImage = currentFaceImage;
 			}
-			currentFaceImage  = facesStack.shift();
-			facesStack.push(currentFaceImage);
 
+			do{
+				currentFaceImage  = facesStack.shift();
+				facesStack.push(currentFaceImage);
+			}while(currentFaceImage.imagename == prevFaceImage.imagename);
 			console.log("morphing from ");
 			console.log(prevFaceImage.imagename);
 			console.log("to");
