@@ -32,10 +32,10 @@ var maxPage = 20;
 
 // starting off with a few known good images..
 var imageArray = [
-//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT254471.jpg",
+//			"http://images.metmuseum.org/CRDImages/ep/original/DT254471.jpg",
 			"http://images.metmuseum.org/CRDImages/ep/original/co.ep.1971.86_16.1.jpg",
 			"http://images.metmuseum.org/CRDImages/ep/original/DT2774.jpg",
-//			"http://images.metmuseum.org/CRDImages/ep/web-large/DT390.jpg"
+//			"http://images.metmuseum.org/CRDImages/ep/original/DT390.jpg"
 			];
 // triangles are indexes of points, forming a mesh.
 
@@ -262,7 +262,7 @@ $( document ).ready(function() {
 				for(i = 0; i < items.length; i++){
 					item = items[i];
 					var thumb = item.image_thumb;
-					var imageUrl = "?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"original");
+					var imageUrl = "?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"original").replace(/web-large/,"original");
 					if(!foundImages[imageUrl]){
 						imageArray.push(imageUrl);
 						foundImages[imageUrl] = imageUrl;
