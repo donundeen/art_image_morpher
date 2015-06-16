@@ -26,7 +26,7 @@ console.log("in start");
 
 // config vars
 var morphtime = 6000;
-var waitTime = 6000;
+var waitTime = 1000;
 var maxPage = 50;
 var searchTerm= "portrait";
 
@@ -326,7 +326,7 @@ $( document ).ready(function() {
 
 	var keepFindingFaces = true;
 
-	//startFindFaces();
+	startFindFaces();
 
 	morpherLoop();
 
@@ -414,7 +414,7 @@ $( document ).ready(function() {
 		facesStack.push(imagesData[currentImage]);
 		setTimeout(function(){
 			morpherLoop();
-		}, 500);
+		}, 100);
 
 	}, false);
 
@@ -596,12 +596,12 @@ $( document ).ready(function() {
 					    	console.log("finished morph");
 					    	//morpherLoop();
 					    	startFindFaces();
-//					    	setTimeout(startFindFaces, waitTime);
+//					    	setTimeout(morpherLoop, waitTime);
 			});
 		}else{
-			startFindFaces();
+//			startFindFaces();
 //			morpherLoop();
-//			setTimeout(startFindFaces, waitTime);
+			setTimeout(startFindFaces, waitTime);
 		}
 	}
 
@@ -662,27 +662,35 @@ $( document ).ready(function() {
 
 			$("#morpherhere").html(morpher.canvas);
 
+			morpher.on("animation:complete", function(){
+				console.log("complete");
+				callback();
+
+			});
 
 
 			morpher.set([1, 0]);
 			morpher.animate([0, 1], morphtime);
 
-
-			setTimeout(callback, morphtime);
 		}else{
 			console.log("reusing morpher");
 
 			prevMorpher = morpher;
 			morpher = new Morpher(json);
 
+
+			morpher.on("animation:complete", function(){
+				console.log("complete");
+				callback();
+
+			});
+
 			morpher.on("load", function(themorpher){
 				console.log("new load");
 				delete prevMorpher;
 				$("#morpherhere").html(morpher.canvas);
 				morpher.set([1]);
-
 				morpher.animate([0, 1], morphtime);
-				setTimeout(callback, morphtime);
 			});
 
 		}
