@@ -27,7 +27,8 @@ console.log("in start");
 // config vars
 var morphtime = 6000;
 var waitTime = 6000;
-var maxPage = 20;
+var maxPage = 50;
+var searchTerm= "portrait";
 
 
 // starting off with a few known good images..
@@ -235,7 +236,7 @@ $( document ).ready(function() {
 	}
 
 
-//	shuffle(imageArray);
+	shuffle(imageArray);
 
 
 	// searching for images section
@@ -244,7 +245,7 @@ $( document ).ready(function() {
 
 	function findMoreImages(){
 		// start scrapi loop
-		var searchUrl = "http://www.scrapi.org/search/portrait?page="+getRandomInt(0, maxPage);
+		var searchUrl = "http://www.scrapi.org/search/"+searchTerm+"?page="+getRandomInt(0, maxPage);
 		console.log("calling " + searchUrl);
 		$.ajax({
 			url : searchUrl,
@@ -554,7 +555,7 @@ $( document ).ready(function() {
 
 	function morpherLoop(){
 
-	//	shuffle(facesStack);
+		shuffle(facesStack);
 
 		console.log("in morpher loop ");
 		console.log(facesStack.length);
