@@ -1,0 +1,25 @@
+<head>
+  <title>face_to_face</title>
+  <script src="client/clmtrackr.js"></script>
+  <script src="client/models/model_pca_20_svm.js"></script>
+
+</head>
+
+<body>
+  <h1>Welcome to Meteor! {{getPublishedCount 'image_counter'}} total objects, {{getFaceCheckCount 'faces_checked_counter'}} have been checked, {{getFaceCount 'face_counter'}} have faces.</h1>
+{{> facefinder}}
+{{> facemorpher}}
+</body>
+
+<template name="facefinder">
+  <div id="trackerimages">
+      <div id="container1">
+        <canvas id="image1" ></canvas>
+      </div>
+  </div>
+</template>
+
+<template name="facemorpher">
+  <div style="align: center;" id="morpherhere"></div>
+</template>
+
