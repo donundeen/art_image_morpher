@@ -11,6 +11,30 @@ if (Meteor.isClient) {
     var currentImage;
     var currentObject;
 
+
+    Template.facefinder.helpers({
+        face_images : function () {
+          var result = getRandImage();
+          console.log(result);
+          return [result];
+        },
+
+        hideCompleted: function () {
+          return Session.get("hideCompleted");
+        },
+
+        getPublishedCount : function(){
+          return  Counts.get("images_counter");
+        },
+        getFaceCount : function(){
+          return  Counts.get("face_counter");
+        },
+        getFaceCheckCount : function(){
+          return  Counts.get("faces_checked_counter");
+        }
+
+    });
+
     // detect if tracker fails to find a face
     document.addEventListener("clmtrackrNotFound", function(event) {
         ctrack.stop();
@@ -92,7 +116,7 @@ if (Meteor.isClient) {
         //Set the reactive session as true to indicate that the data have been loaded
         if(db_ready && template_ready){
             console.log("gonna find faces now");
-     //       startFindFaces();
+            startFindFaces();
         }
     });
 
@@ -102,7 +126,7 @@ if (Meteor.isClient) {
         template_ready = true;
         if(db_ready && template_ready){
             console.log("gonna find faces now");            
-    //        startFindFaces();
+            startFindFaces();
         }
     }
 
