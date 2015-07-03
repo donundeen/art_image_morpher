@@ -104,7 +104,7 @@ if (Meteor.isServer) {
         item.random = Math.random();
         console.log(item);
         console.log("inserting " + i);
-        face_images.upsert(item._id, item);
+        face_images.upsert(item._id, item); // don't do update, only insert if it doesn't exist
       }
       setTimeout(findMoreImages, 60000);
     });
