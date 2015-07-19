@@ -45,7 +45,8 @@ shuffle = function(array) {
 }
 
 convertProxyImage = function(imagename, width){
-  var proxyurl = "http://localhost/image_proxy/?action=imgproxy&imgname="+imagename+"&width="+width;
+//  var proxyurl = "http://localhost/image_proxy/?action=imgproxy&imgname="+imagename+"&width="+width;
+  var proxyurl = "/image_proxy/"+imagename+"&width="+width;
   return proxyurl;
 
 }
