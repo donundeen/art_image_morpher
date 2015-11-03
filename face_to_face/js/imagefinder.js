@@ -1,4 +1,5 @@
   var maxPage = 90;
+  var maxPageVA = 900;
   var searchTerm = "portrait";
 
 
@@ -70,7 +71,8 @@ if (Meteor.isServer) {
 
   function findMoreImages(){
     // start scrapi loop
-    var searchUrl = "http://www.scrapi.org/search/"+searchTerm+"?page="+getRandomInt(0, maxPage);
+//    var searchUrl = "http://www.scrapi.org/search/"+searchTerm+"?page="+getRandomInt(0, maxPage);
+    var searchUrl = "http://www.vam.ac.uk/api/json/museumobject/?q="+searchTerm+"&images=1&limit=20&offset="+getRandomInt(0,maxPageVA);
     console.log("calling " + searchUrl);
 
     // server async
@@ -82,7 +84,9 @@ if (Meteor.isServer) {
       }
 
       console.log(result.statusCode, result.data);
-      items = result.data.collection.items;
+//      items = result.data.collection.items; // SCRAPI
+
+      items = result.data.records; // VA
       if(items.length == 0){
         maxPage--;
         if(maxPage <=1){
@@ -94,10 +98,22 @@ if (Meteor.isServer) {
       }
       for(i = 0; i < items.length; i++){
         item = items[i];
-        var thumb = item.image_thumb;
+        //var thumb = item.image_thumb; //scrapi
+        var thumb =   "";// VA
+
+        var image_id = item.fields.primary_image_id; //VA
+        var img_prefix = image_id.substring(0,6); // VA
+        console.log(image_id);
+        console.log(img_prefix);
+
+        var imageUrl = "http://media.vam.ac.uk/media/thira/collection_images/"+img_prefix+"/"+image_id+".jpg" // VA
+        thumb = imageUrl; // VA
+
 //        var imageUrl = "?action=imgproxy&width=800&imgname="+  thumb.replace(/web-thumb/,"original").replace(/web-large/,"original");
-        var imageUrl = thumb.replace(/web-thumb/,"original").replace(/web-large/,"original");
-        item._id = item.id + "";
+//        var imageUrl = thumb.replace(/web-thumb/,"original").replace(/web-large/,"original"); // scrapi
+//        item._id = item.id + ""; // SCRAPI
+        item._id = item.pk + "_VA"; // VA
+
         item.imageUrl = imageUrl;
         item.image_large = thumb.replace(/web-thumb/,"web-large");
         item.image_original = thumb.replace(/web-thumb/,"original");
