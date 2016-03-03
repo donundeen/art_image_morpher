@@ -55,9 +55,9 @@ if (Meteor.isServer) {
 
 
   Meteor.publish('publication', function() {
-    Counts.publish(this, 'face_counter', face_images.find({faces_found : {$exists : true, $eq : true}}));
+    Counts.publish(this, 'face_counter', face_images.find({faces_found : true}));
     Counts.publish(this, 'images_counter', face_images.find());
-    Counts.publish(this, 'faces_checked_counter', face_images.find({faces_checked : {$exists : true, $eq : true}}));
+    Counts.publish(this, 'faces_checked_counter', face_images.find({faces_checked : true}));
 //    Counts.publish(this, 'face_counter', face_images.find({faces_found : {$exists : true, $eq : true}}));
   });
 
@@ -66,7 +66,7 @@ if (Meteor.isServer) {
   });  
 
 //  face_images.remove({});
-
+// uncomment to put this code to work
   findMoreImages();
 
   function findMoreImages(){
@@ -76,7 +76,7 @@ if (Meteor.isServer) {
     console.log("calling " + searchUrl);
 
     // server async
-    Meteor.http.get(searchUrl, function (err, result) {
+    HTTP.get(searchUrl, {},function (err, result) {
 
       if(err){
         console.log("error! " + err);
