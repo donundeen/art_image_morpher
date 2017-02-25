@@ -1,0 +1,14 @@
+{
+  "name": "face_to_face",
+  "version": "1.0.0",
+  "description": "",
+  "main": "face_to_face.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-runtime": "^6.23.0"
+  }
+}

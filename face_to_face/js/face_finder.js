@@ -1,4 +1,4 @@
-// face-finder code
+ // face-finder code
 //face_images = new Mongo.Collection("face_images"); // images with (maybe) face data, and other relevant information
 
 
@@ -126,20 +126,25 @@ if (Meteor.isClient) {
         template_ready = true;
         if(db_ready && template_ready){
             console.log("gonna find faces now");            
-            startFindFaces();
+            // uncomment below to find faces
+//            startFindFaces();
         }
     }
 
 
     function startFindFaces(){
 
-        image = getRandImage({faces_checked : {$exists : false}});
-        imagename = image.image_large;
+        var image = getRandImage({faces_checked : {$exists : false}});
+        var imagename = image.image_large;
+        console.log("image name " + imagename);
+        imagename = imagename.replace("media//", "/");
+        console.log("image name " + imagename);
         currentImage = imagename;
         currentObject = image;
 
-        imageurl = convertProxyImage(imagename, 500);
-
+        var imageurl = convertProxyImage(imagename, 500);
+        imageurl = imageurl.replace(".jpg.jpg", ".jpg");
+        imageurl = imageurl.replace("media//", "/");
         console.log("finding on "  + imageurl);
         var cc = document.getElementById('image1').getContext('2d');
         if(typeof ctrack !== 'undefined'){
