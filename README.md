@@ -4,3 +4,6 @@ making a version for imperial war museum
 
 # To Run
 - need to run separate proxy and image_proxy servers (eventually these will all run under one umbrella)
+
+
+test url:   
